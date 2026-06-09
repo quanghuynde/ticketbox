@@ -1,0 +1,57 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "TicketBox Payment API",
+  "dateExported": "2026-06-09T16:45:00.000Z",
+  "version": "1.1",
+  "folders": [],
+  "requests": [
+    {
+      "containerId": "",
+      "sortNum": 10000,
+      "headers": [],
+      "colId": "payment-api",
+      "name": "1. Create Payment",
+      "url": "http://localhost:5001/api/payment/create",
+      "method": "POST",
+      "parameters": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"totalAmount\": 50000\n}",
+        "form": []
+      },
+      "tests": []
+    },
+    {
+      "containerId": "",
+      "sortNum": 20000,
+      "headers": [],
+      "colId": "payment-api",
+      "name": "2. Get Payment Status",
+      "url": "http://localhost:5001/api/payment/status/{{orderCode}}",
+      "method": "GET",
+      "parameters": [],
+      "tests": []
+    },
+    {
+      "containerId": "",
+      "sortNum": 30000,
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Apikey Learnmate_Himitsu_Secret_Nimu_Key_6202_Abc123"
+        }
+      ],
+      "colId": "payment-api",
+      "name": "3. SePay Webhook (Mock)",
+      "url": "http://localhost:5001/api/payment/webhook",
+      "method": "POST",
+      "parameters": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"content\": \"Chuyen khoan TBXXXX\",\n  \"transferAmount\": 50000\n}",
+        "form": []
+      },
+      "tests": []
+    }
+  ]
+}
