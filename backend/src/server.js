@@ -30,6 +30,14 @@ app.get('/', (req, res) => {
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/tickets', require('./routes/ticketRoutes'));
 
+// Review routes
+const reviewRoutes = require('./routes/reviewRoutes');
+app.use('/api/reviews', reviewRoutes);
+
+// Payment routes
+const paymentRoutes = require('./routes/paymentRoutes');
+app.use('/api/payment', paymentRoutes);
+
 // Database connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true, 
