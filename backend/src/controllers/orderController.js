@@ -11,7 +11,7 @@ const getAll = async (req, res) => {
 
 const getById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.orderId);
     if (!order) return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
     res.status(200).json(order);
   } catch (err) {
@@ -33,7 +33,7 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const order = await Order.findByIdAndUpdate(req.params.orderId, req.body, { new: true, runValidators: true });
     if (!order) return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
     res.status(200).json(order);
   } catch (err) {
@@ -46,7 +46,7 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
   try {
-    const order = await Order.findByIdAndDelete(req.params.id);
+    const order = await Order.findByIdAndDelete(req.params.orderId);
     if (!order) return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
     res.status(200).json({ message: 'Xóa đơn hàng thành công' });
   } catch (err) {
