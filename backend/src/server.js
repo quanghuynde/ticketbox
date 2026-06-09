@@ -3,6 +3,16 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
+require('./models/Event');
+require('./models/Category');
+require('./models/Ticket');
+require('./models/User');
+require('./models/Order');
+require('./models/OrderDetail');
+require('./models/Payment');
+require('./models/Notification');
+require('./models/Review');
+
 dotenv.config();
 
 const app = express();
@@ -19,10 +29,6 @@ app.get('/', (req, res) => {
 
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/tickets', require('./routes/ticketRoutes'));
-
-// Payment routes
-const paymentRoutes = require('./routes/paymentRoutes');
-app.use('/api/payment', paymentRoutes);
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI, {
