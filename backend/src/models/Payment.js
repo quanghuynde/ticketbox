@@ -6,6 +6,10 @@ const paymentSchema = new mongoose.Schema({
         ref: 'Order',
         required: true
     },
+    orderCode: {
+        type: String,
+        index: true
+    },
     method: {
         type: String,
         required: true
