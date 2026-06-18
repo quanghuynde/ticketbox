@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Share2, Heart, ChevronLeft, Plus, Minus, Ticket } from 'lucide-react';
+import ReviewSection from '../components/ReviewSection';
 
 const mockTickets = [
   { id: 't001', name: 'Vé VIP', price: 500000, desc: 'Chỗ ngồi hàng đầu + thẻ hậu trường + poster phiên bản giới hạn.', available: 15 },
@@ -69,6 +70,9 @@ const EventDetails = () => {
               Đừng bỏ lỡ cơ hội cháy hết mình cùng bạn bè trong không gian âm nhạc đẳng cấp.
             </p>
           </div>
+
+          {/* Review Section */}
+          <ReviewSection eventId="mock-event-001" />
         </div>
 
         {/* Right Column: Ticket Selection */}
@@ -117,7 +121,17 @@ const EventDetails = () => {
               </div>
               <button 
                 disabled={totalQty === 0}
-                onClick={() => navigate('/checkout')}
+                onClick={() => {
+                  const items = mockTickets
+                    .filter(t => quantities[t.id] > 0)
+                    .map(t => ({
+                      name: 'FPT Music Festival 2026',
+                      type: t.name,
+                      quantity: quantities[t.id],
+                      unitPrice: t.price
+                    }));
+                  navigate('/checkout', { state: { items, totalAmount: totalPrice } });
+                }}
                 className={`w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
                   totalQty > 0 
                   ? 'bg-[#2dc275] text-black hover:scale-[1.02] shadow-[0_10px_30px_rgba(45,194,117,0.3)]' 

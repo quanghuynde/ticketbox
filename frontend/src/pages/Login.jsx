@@ -108,14 +108,10 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <button className="flex items-center justify-center gap-2 bg-[#27272a]/50 hover:bg-[#27272a] border border-white/10 py-3 rounded-2xl transition-all">
               <Chrome className="w-5 h-5" />
               <span className="text-sm font-medium">Google</span>
-            </button>
-            <button className="flex items-center justify-center gap-2 bg-[#27272a]/50 hover:bg-[#27272a] border border-white/10 py-3 rounded-2xl transition-all">
-              <Github className="w-5 h-5" />
-              <span className="text-sm font-medium">GitHub</span>
             </button>
           </div>
         </div>
