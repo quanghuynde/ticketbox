@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 
 require("./models/Event");
 require("./models/Category");
@@ -25,6 +26,9 @@ const adminRoutes = require("./routes/adminRoutes");
 app.use(cors());
 app.use(express.json());
 
+// Serve static files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Routes
 app.get("/", (req, res) => {
   res.send("TicketBox API is running...");
@@ -35,6 +39,8 @@ app.use("/api/users", require("./routes/userRoutes"));
 
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/tickets", require("./routes/ticketRoutes"));
+app.use("/api/events", require("./routes/eventRoutes"));
+app.use("/api/categories", require("./routes/categoryRoutes"));
 
 // Review routes
 const reviewRoutes = require("./routes/reviewRoutes");
@@ -43,6 +49,10 @@ app.use("/api/reviews", reviewRoutes);
 // Payment routes
 const paymentRoutes = require("./routes/paymentRoutes");
 app.use("/api/payment", paymentRoutes);
+
+// Upload routes
+const uploadRoutes = require("./routes/uploadRoutes");
+app.use("/api/upload", uploadRoutes);
 
 // Database connection
 mongoose

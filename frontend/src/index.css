@@ -68,3 +68,22 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--surface-raised);
 }
+
+/* Style for native date and time pickers */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.5) sepia(1) saturate(5) hue-rotate(90deg); /* Adjust to match #2dc275 approximately */
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  background: rgba(45, 194, 117, 0.1);
+}
+
+/* Base styles for forms */
+input[type="date"], input[type="time"] {
+  color-scheme: dark;
+}
