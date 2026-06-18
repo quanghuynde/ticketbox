@@ -11,7 +11,7 @@ import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="min-h-screen bg-[#000000] text-white selection:bg-[#2dc275]/30">
         <Navbar />
         

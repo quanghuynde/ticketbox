@@ -36,6 +36,10 @@ const getReviewsByEvent = async (req, res) => {
     const reviews = await Review.find({ eventId }).populate('userId', 'fullName avatar email').sort({ createdAt: -1 });
     res.status(200).json(reviews);
   } catch (err) {
+    // Invalid ObjectId (e.g. mock strings) → return empty list instead of 500
+    if (err.name === 'CastError') {
+      return res.status(200).json([]);
+    }
     console.error('[getReviewsByEvent]', err);
     res.status(500).json({ message: 'Lỗi lấy danh sách đánh giá', error: err.message });
   }
