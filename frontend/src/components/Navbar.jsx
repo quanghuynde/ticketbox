@@ -1,9 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, User, Ticket, Menu } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#000000]/80 backdrop-blur-md border-b border-[#27272a]">
@@ -31,20 +33,47 @@ const Navbar = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate('/login')}
-            className="hidden sm:flex text-[#aaaaaa] hover:text-[#2dc275] text-sm font-medium transition-colors"
-          >
-            Bán vé
-          </button>
-          <div className="w-[1px] h-4 bg-[#27272a] hidden sm:block"></div>
-          <button 
-            onClick={() => navigate('/login')}
-            className="flex items-center gap-2 text-white bg-[#27272a] px-4 py-2 rounded-full text-sm font-medium hover:bg-[#2dc275] hover:text-black transition-all duration-300"
-          >
-            <User className="w-4 h-4" />
-            <span>Đăng nhập</span>
-          </button>
+          {user ? (
+            <div className="flex items-center gap-4">
+              {user.role === 'admin' && (
+                <button
+                  onClick={() => navigate('/admin/dashboard')}
+                  className="hidden sm:flex text-[#2dc275] hover:text-white text-sm font-semibold transition-colors"
+                >
+                  Dashboard
+                </button>
+              )}
+              <div className="flex items-center gap-2 text-white bg-[#27272a]/80 px-4 py-2 rounded-full text-sm font-medium border border-white/5 shadow-sm">
+                <div className="w-5 h-5 bg-[#2dc275] rounded-full flex items-center justify-center text-black font-bold text-[10px]">
+                  {user.fullName.charAt(0).toUpperCase()}
+                </div>
+                <span>{user.fullName}</span>
+              </div>
+              <button
+                onClick={logout}
+                className="text-[#aaaaaa] hover:text-red-500 text-sm font-medium transition-colors"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          ) : (
+            <>
+              <button 
+                onClick={() => navigate('/login')}
+                className="hidden sm:flex text-[#aaaaaa] hover:text-[#2dc275] text-sm font-medium transition-colors"
+              >
+                Bán vé
+              </button>
+              <div className="w-[1px] h-4 bg-[#27272a] hidden sm:block"></div>
+              <button 
+                onClick={() => navigate('/login')}
+                className="flex items-center gap-2 text-white bg-[#27272a] px-4 py-2 rounded-full text-sm font-medium hover:bg-[#2dc275] hover:text-black transition-all duration-300"
+              >
+                <User className="w-4 h-4" />
+                <span>Đăng nhập</span>
+              </button>
+            </>
+          )}
           <button className="md:hidden text-white">
             <Menu className="w-6 h-6" />
           </button>

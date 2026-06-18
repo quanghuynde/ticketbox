@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:9999/api';
 
 /**
  * Create a new payment order and receive QR URL + bank details.
@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
  * @param {number} totalAmount  - Total in VND
  */
 export async function createPayment(items, totalAmount) {
-  const res = await fetch(`${API_URL}/api/payment/create`, {
+  const res = await fetch(`${API_URL}/payment/create`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ items, totalAmount })
@@ -21,7 +21,7 @@ export async function createPayment(items, totalAmount) {
  * @param {string} orderCode
  */
 export async function getPaymentStatus(orderCode) {
-  const res = await fetch(`${API_URL}/api/payment/status/${orderCode}`);
+  const res = await fetch(`${API_URL}/payment/status/${orderCode}`);
   if (!res.ok) throw new Error('Failed to fetch payment status');
   return res.json();
   // returns: { orderCode, status, paymentStatus, amount }
