@@ -2,15 +2,27 @@ import React from 'react';
 import { Calendar, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const EventCard = ({ title, description, date, location, image, status }) => {
+const EventCard = ({ id, title, description, date, location, image, status }) => {
   const isCompleted = status === 'completed';
+
+  const API_URL = import.meta.env.VITE_API_URL || '/api';
+  const BACKEND_URL = API_URL.replace('/api', '');
+
+  const getImageUrl = (img) => {
+    if (!img) return 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2670&auto=format&fit=crop';
+    if (img.startsWith('http')) return img;
+    return `${BACKEND_URL}${img}`;
+  };
 
   return (
     <div className="group bg-[#27272a] rounded-3xl overflow-hidden border border-white/5 hover:border-[#2dc275]/50 transition-all duration-500 hover:-translate-y-2">
       {/* Image Container */}
       <div className="relative h-48 overflow-hidden">
         <img 
-          src={image} 
+          src={getImageUrl(image)} 
+          onError={(e) => {
+            e.target.src = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2670&auto=format&fit=crop';
+          }}
           alt={title} 
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
@@ -50,7 +62,7 @@ const EventCard = ({ title, description, date, location, image, status }) => {
           </button>
         ) : (
           <Link 
-            to={`/event/${title.toLowerCase().replace(/ /g, '-')}`}
+            to={`/event/${id}`}
             className="w-full py-3 rounded-xl font-bold text-sm bg-white/5 text-white hover:bg-[#2dc275] hover:text-black transition-all duration-300 text-center block"
           >
             Đặt ngay
