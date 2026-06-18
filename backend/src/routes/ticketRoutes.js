@@ -2,10 +2,14 @@ const express = require('express');
 const router = express.Router();
 const ticketController = require('../controllers/ticketController');
 
+const { verifyToken, isAdmin } = require('../middleware/auth');
+
 router.get('/', ticketController.getAll);
 router.get('/:ticketId', ticketController.getById);
-router.post('/', ticketController.create);
-router.put('/:ticketId', ticketController.update);
-router.delete('/:ticketId', ticketController.remove);
+
+// Admin routes
+router.post('/', verifyToken, isAdmin, ticketController.create);
+router.put('/:ticketId', verifyToken, isAdmin, ticketController.update);
+router.delete('/:ticketId', verifyToken, isAdmin, ticketController.remove);
 
 module.exports = router;
