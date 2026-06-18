@@ -42,6 +42,23 @@ const getReviewsByEvent = async (req, res) => {
 };
 
 /**
+ * GET /api/reviews
+ * Returns all reviews
+ */
+const getAllReviews = async (req, res) => {
+  try {
+    const reviews = await Review.find().select('-__v')
+      .populate('userId', 'fullName avatar email')
+      .populate('eventId', 'title')
+      .sort({ createdAt: -1 });
+    res.status(200).json(reviews);
+  } catch (err) {
+    console.error('[getAllReviews]', err);
+    res.status(500).json({ message: 'Lỗi lấy tất cả đánh giá', error: err.message });
+  }
+};
+
+/**
  * DELETE /api/reviews/:id
  */
 const deleteReview = async (req, res) => {
@@ -63,5 +80,6 @@ const deleteReview = async (req, res) => {
 module.exports = {
   createReview,
   getReviewsByEvent,
-  deleteReview
+  deleteReview,
+  getAllReviews
 };
