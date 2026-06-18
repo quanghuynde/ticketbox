@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Ticket = require('../models/Ticket');
 
 function escapeRegExp(value) {
@@ -124,6 +125,19 @@ const getById = async (req, res) => {
   }
 };
 
+const getByEvent = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.eventId)) {
+      return res.status(400).json({ message: 'Mã sự kiện không hợp lệ' });
+    }
+
+    const tickets = await Ticket.find({ eventId: req.params.eventId }).sort({ ticketName: 1 });
+    res.status(200).json(tickets);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi lấy danh sách vé', error: err.message });
+  }
+};
+
 const create = async (req, res) => {
   try {
     const { errors, data } = validateTicketPayload(req.body);
@@ -185,4 +199,4 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+module.exports = { getAll, getById, getByEvent, create, update, remove };
