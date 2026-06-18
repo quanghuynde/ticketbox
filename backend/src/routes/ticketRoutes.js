@@ -5,6 +5,7 @@ const ticketController = require('../controllers/ticketController');
 const { verifyToken, isAdmin } = require('../middleware/auth');
 
 router.get('/', ticketController.getAll);
+router.get('/event/:eventId', ticketController.getByEvent);
 router.get('/:ticketId', ticketController.getById);
 
 // Admin routes

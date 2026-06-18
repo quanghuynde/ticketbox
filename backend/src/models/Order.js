@@ -28,6 +28,16 @@ const orderSchema = new mongoose.Schema({
     }
 });
 
+orderSchema.virtual('orderDetails', {
+    ref: 'OrderDetail',
+    localField: '_id',
+    foreignField: 'orderId',
+    justOne: false
+});
+
+orderSchema.set('toJSON', { virtuals: true });
+orderSchema.set('toObject', { virtuals: true });
+
 const Order = mongoose.model('Order', orderSchema);
 
 module.exports = Order;
