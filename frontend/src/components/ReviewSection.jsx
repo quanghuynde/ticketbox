@@ -172,6 +172,7 @@ const ReviewSection = ({ eventId, currentUserId = null }) => {
 
     setSubmitting(true);
     try {
+      console.log('Post review:', { userId, eventId, rating, comment });
       const newReview = await createReview({ userId, eventId, rating, comment });
       // Optimistically add to list (with placeholder user info)
       setReviews((prev) => [{ ...newReview, userId: { fullName: 'Bạn', _id: userId } }, ...prev]);

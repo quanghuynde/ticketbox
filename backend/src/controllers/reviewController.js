@@ -21,6 +21,9 @@ const createReview = async (req, res) => {
 
     res.status(201).json(review);
   } catch (err) {
+    if (err.name === 'CastError' || err.name === 'ValidationError') {
+      return res.status(400).json({ message: 'ID người dùng hoặc ID sự kiện không hợp lệ', error: err.message });
+    }
     console.error('[createReview]', err);
     res.status(500).json({ message: 'Lỗi tạo đánh giá', error: err.message });
   }

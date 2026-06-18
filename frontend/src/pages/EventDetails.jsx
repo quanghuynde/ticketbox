@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Calendar, MapPin, Share2, Heart, ChevronLeft, Plus, Minus, Ticket } from 'lucide-react';
 import ReviewSection from '../components/ReviewSection';
 
@@ -11,6 +11,7 @@ const mockTickets = [
 
 const EventDetails = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [quantities, setQuantities] = useState({
     't001': 0,
     't002': 0,
@@ -72,7 +73,7 @@ const EventDetails = () => {
           </div>
 
           {/* Review Section */}
-          <ReviewSection eventId="mock-event-001" />
+          <ReviewSection eventId={id} />
         </div>
 
         {/* Right Column: Ticket Selection */}
