@@ -3,8 +3,12 @@ const router = express.Router();
 const {
   createReview,
   getReviewsByEvent,
-  deleteReview
+  deleteReview,
+  getAllReviews
 } = require('../controllers/reviewController');
+
+// GET /api/reviews - Get all reviews
+router.get('/', getAllReviews);
 
 // POST /api/reviews - Create a new review
 router.post('/', createReview);
