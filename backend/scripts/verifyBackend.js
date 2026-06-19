@@ -1,6 +1,6 @@
 // Using built-in fetch (Node 18+)
 
-const API_URL = 'http://localhost:9999/api';
+const API_URL = 'http://localhost:5000/api';
 let token = '';
 
 const test = async () => {
