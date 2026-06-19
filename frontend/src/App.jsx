@@ -15,7 +15,7 @@ function App() {
       <div className="min-h-screen bg-[#000000] text-white selection:bg-[#2dc275]/30">
         <Navbar />
         
-        <main className="pt-16 pb-20">
+        <main className="pt-32 pb-20">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/event/:id" element={<EventDetails />} />

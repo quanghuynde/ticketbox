@@ -1,15 +1,49 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, User, Ticket, Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const initialSearch = params.get('search') || '';
+  const [search, setSearch] = useState(initialSearch);
+
+  useEffect(() => {
+    // Keep input in sync when URL changes (back/forward)
+    const p = new URLSearchParams(location.search);
+    setSearch(p.get('search') || '');
+  }, [location.search]);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#000000]/80 backdrop-blur-md border-b border-[#27272a]">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <>
+      {/* Global top search bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#000000]/90 backdrop-blur-md border-b border-[#27272a] py-3">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="w-full max-w-4xl mx-auto relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aaaaaa] w-4 h-4" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const q = search.trim();
+                  if (q) navigate(`/?search=${encodeURIComponent(q)}`);
+                  else navigate('/');
+                }
+              }}
+              type="text"
+              placeholder="Tìm kiếm sự kiện, nghệ sĩ, hoặc địa điểm..."
+              className="w-full bg-[#27272a] text-white pl-10 pr-4 py-2 rounded-full text-sm border border-transparent focus:border-[#2dc275] focus:outline-none transition-all duration-300"
+            />
+          </div>
+        </div>
+      </div>
+
+      <nav className="fixed top-14 left-0 right-0 z-40 bg-[#000000]/80 backdrop-blur-md border-b border-[#27272a]">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <div 
           onClick={() => navigate('/')}
@@ -21,15 +55,8 @@ const Navbar = () => {
           <span className="text-white font-bold text-xl tracking-tight">TicketBox</span>
         </div>
 
-        {/* Search Bar */}
-        <div className="hidden md:flex flex-1 max-w-md mx-8 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aaaaaa] w-4 h-4" />
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm sự kiện, nghệ sĩ, hoặc địa điểm..."
-            className="w-full bg-[#27272a] text-white pl-10 pr-4 py-2 rounded-full text-sm border border-transparent focus:border-[#2dc275] focus:outline-none transition-all duration-300"
-          />
-        </div>
+        {/* Search Bar intentionally hidden here since global search is used */}
+        <div className="hidden" />
 
         {/* Actions */}
         <div className="flex items-center gap-4">
@@ -80,6 +107,7 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
+    </>
   );
 };
 

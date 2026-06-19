@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Hero from '../components/Hero';
 import EventCard from '../components/EventCard';
 
@@ -7,6 +8,10 @@ const Home = () => {
   const [categories, setCategories] = useState([{ _id: 'all', name: 'Tất cả' }]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
+  const [search, setSearch] = useState(params.get('search') || '');
 
   const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -32,9 +37,26 @@ const Home = () => {
     fetchData();
   }, []);
 
-  const filteredEvents = activeCategory === 'all' 
-    ? events 
+  // Keep search in sync with URL (back/forward)
+  useEffect(() => {
+    const p = new URLSearchParams(location.search);
+    setSearch(p.get('search') || '');
+  }, [location.search]);
+
+  const lowerSearch = (search || '').trim().toLowerCase();
+
+  const filteredByCategory = activeCategory === 'all'
+    ? events
     : events.filter(e => e.categoryId?._id === activeCategory || e.categoryId === activeCategory);
+
+  const filteredEvents = lowerSearch
+    ? filteredByCategory.filter(e => {
+        const t = (e.title || '').toLowerCase();
+        const d = (e.description || '').toLowerCase();
+        const l = (e.location || '').toLowerCase();
+        return t.includes(lowerSearch) || d.includes(lowerSearch) || l.includes(lowerSearch);
+      })
+    : filteredByCategory;
 
   return (
     <>
@@ -42,6 +64,21 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4 mt-12 mb-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <h2 className="text-3xl font-bold">Khám phá <span className="text-[#2dc275]">Sự kiện</span></h2>
+          <div className="w-full md:max-w-md">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const q = (search || '').trim();
+                  if (q) navigate(`/?search=${encodeURIComponent(q)}`);
+                  else navigate('/');
+                }
+              }}
+              placeholder="Tìm kiếm sự kiện, tên, địa điểm..."
+              className="w-full px-4 py-2 rounded-full bg-[#151516] border border-[#27272a] text-sm outline-none focus:ring-2 focus:ring-[#2dc275]/40"
+            />
+          </div>
           <div className="flex flex-wrap gap-2">
             {categories.map(cat => (
               <button
