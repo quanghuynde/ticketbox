@@ -220,7 +220,7 @@ const updateUser = async (req, res) => {
       // Check if email is already taken by another user
       const duplicateUser = await User.findOne({ email, _id: { $ne: req.params.id } });
       if (duplicateUser) {
-        return res.status(400).json({ message: 'Email is already in use by another account.' });
+        return res.status(400).json({ message: 'Email này đã được sử dụng bởi một tài khoản khác.' });
       }
       user.email = email;
     }
