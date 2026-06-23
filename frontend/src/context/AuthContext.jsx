@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed. Please try again.');
+        throw new Error(data.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
       }
 
       localStorage.setItem('token', data.token);
@@ -51,20 +51,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (fullName, email, password) => {
+  const register = async (fullName, email, password, otp) => {
     try {
       const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ fullName, email, password }),
+        body: JSON.stringify({ fullName, email, password, otp }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Registration failed. Please try again.');
+        throw new Error(data.message || 'Đăng ký thất bại. Vui lòng thử lại.');
       }
 
       localStorage.setItem('token', data.token);

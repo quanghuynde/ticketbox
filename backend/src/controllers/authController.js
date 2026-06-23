@@ -5,16 +5,24 @@ const User = require('../models/User');
 // Register a new user
 const register = async (req, res) => {
   try {
-    const { fullName, email, password, role } = req.body;
+    const { fullName, email, password, role, otp } = req.body;
 
     if (!fullName || !email || !password) {
-      return res.status(400).json({ message: 'Please provide all required fields (fullName, email, password).' });
+      return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ các thông tin bắt buộc (họ tên, email, mật khẩu).' });
+    }
+
+    if (!otp) {
+      return res.status(400).json({ message: 'Vui lòng nhập mã OTP để đăng ký.' });
+    }
+
+    if (otp !== '123456') {
+      return res.status(400).json({ message: 'Mã OTP không chính xác. Vui lòng thử lại.' });
     }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'Email is already in use.' });
+      return res.status(400).json({ message: 'Email này đã được sử dụng.' });
     }
 
     // Hash password
@@ -50,13 +58,13 @@ const register = async (req, res) => {
     };
 
     res.status(201).json({
-      message: 'User registered successfully.',
+      message: 'Đăng ký người dùng thành công.',
       token,
       user: userResponse,
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error during registration.' });
+    res.status(500).json({ message: 'Lỗi máy chủ trong quá trình đăng ký.' });
   }
 };
 
@@ -66,24 +74,24 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide email and password.' });
+      return res.status(400).json({ message: 'Vui lòng điền email và mật khẩu.' });
     }
 
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password.' });
+      return res.status(400).json({ message: 'Email hoặc mật khẩu không hợp lệ.' });
     }
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password.' });
+      return res.status(400).json({ message: 'Email hoặc mật khẩu không hợp lệ.' });
     }
 
     // Check if user is active
     if (!user.isActive) {
-      return res.status(403).json({ message: 'Your account is deactivated. Please contact support.' });
+      return res.status(403).json({ message: 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ bộ phận hỗ trợ.' });
     }
 
     // Generate token
@@ -104,13 +112,13 @@ const login = async (req, res) => {
     };
 
     res.status(200).json({
-      message: 'Logged in successfully.',
+      message: 'Đăng nhập thành công.',
       token,
       user: userResponse,
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login.' });
+    res.status(500).json({ message: 'Lỗi máy chủ trong quá trình đăng nhập.' });
   }
 };
 

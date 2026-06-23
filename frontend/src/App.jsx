@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import AdminDashboard from './pages/AdminDashboard';
+import UserProfile from './pages/UserProfile';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/profile" element={<UserProfile />} />
           </Routes>
         </main>
 

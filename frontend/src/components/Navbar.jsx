@@ -70,7 +70,10 @@ const Navbar = () => {
                   Dashboard
                 </button>
               )}
-              <div className="flex items-center gap-2 text-white bg-[#27272a]/80 px-4 py-2 rounded-full text-sm font-medium border border-white/5 shadow-sm">
+              <div 
+                onClick={() => navigate('/profile')}
+                className="flex items-center gap-2 text-white bg-[#27272a]/80 px-4 py-2 rounded-full text-sm font-medium border border-white/5 shadow-sm cursor-pointer hover:border-[#2dc275]/50 hover:bg-[#27272a] transition-all"
+              >
                 <div className="w-5 h-5 bg-[#2dc275] rounded-full flex items-center justify-center text-black font-bold text-[10px]">
                   {user?.fullName?.charAt(0).toUpperCase() || '?'}
                 </div>
