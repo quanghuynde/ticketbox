@@ -1,13 +1,16 @@
-
+ 
 const Event = require('../models/Event');
 const Ticket = require('../models/Ticket');
 
-// GET /api/events
+/**
+ * Get all events with optional filtering
+ * @param {Object} req - Request object with query parameters (category, search, status)
+ * @param {Object} res - Response object
+ */
 const getAll = async (req, res) => {
   try {
     const { category, search, status } = req.query;
-    const query = {};
-    
+    const query = {}; 
     if (category) query.categoryId = category;
     if (status) query.status = status;
     if (search) {
@@ -23,7 +26,11 @@ const getAll = async (req, res) => {
   }
 };
 
-// GET /api/events/:id
+/**
+ * Get event details by ID including associated tickets
+ * @param {Object} req - Request object with event ID in params
+ * @param {Object} res - Response object
+ */
 const getById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -31,7 +38,7 @@ const getById = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({ message: 'ID sự kiện không hợp lệ' });
     }
-
+  
     const event = await Event.findById(id).populate('categoryId', 'name');
     if (!event) return res.status(404).json({ message: 'Không tìm thấy sự kiện' });
     
@@ -44,7 +51,11 @@ const getById = async (req, res) => {
   }
 };
 
-// POST /api/events (Admin only)
+/**
+ * Create a new event (Admin only)
+ * @param {Object} req - Request object with event data in body
+ * @param {Object} res - Response object
+ */
 const create = async (req, res) => {
   try {
     const { title, description, eventDate, location, image, categoryId, status } = req.body;
@@ -52,6 +63,8 @@ const create = async (req, res) => {
     if (!title || !eventDate || !location || !categoryId) {
       return res.status(400).json({ message: 'Vui lòng nhập đầy đủ thông tin sự kiện' });
     }
+   
+
 
     const event = await Event.create({
       title,
@@ -70,7 +83,11 @@ const create = async (req, res) => {
   }
 };
 
-// PUT /api/events/:id (Admin only)
+/**
+ * Update an event by ID (Admin only)
+ * @param {Object} req - Request object with event ID in params and update data in body
+ * @param {Object} res - Response object
+ */
 const update = async (req, res) => {
   try {
     const event = await Event.findByIdAndUpdate(
@@ -85,7 +102,12 @@ const update = async (req, res) => {
   }
 };
 
-// DELETE /api/events/:id (Admin only)
+/**
+ * Delete an event by ID (Admin only)
+ * Prevents deletion if event has sold tickets
+ * @param {Object} req - Request object with event ID in params
+ * @param {Object} res - Response object
+ */
 const remove = async (req, res) => {
   try {
     const { id } = req.params;
@@ -104,6 +126,8 @@ const remove = async (req, res) => {
     if (totalSold > 0) {
       return res.status(400).json({ message: 'Không thể xóa sự kiện đã có vé được bán ra' });
     }
+
+
 
     // Delete associated tickets if any
     await Ticket.deleteMany({ eventId: id });
