@@ -5,6 +5,7 @@ import {
   XCircle, Copy, RefreshCw, Clock
 } from 'lucide-react';
 import { createPayment, getPaymentStatus } from '../services/paymentService';
+import { useAuth } from '../context/AuthContext';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -39,6 +40,7 @@ function CopyButton({ text }) {
 const Checkout = () => {
   const navigate   = useNavigate();
   const location   = useLocation();
+  const { user }   = useAuth();
 
   // ── mock order data (replace with router state / cart store later) ──────────
   const orderItems = location.state?.items || [
@@ -131,7 +133,7 @@ const Checkout = () => {
     setLoading(true);
     setError('');
     try {
-      const data = await createPayment(orderItems, totalAmount);
+      const data = await createPayment(orderItems, totalAmount, user?.id || user?._id);
       setPayData(data);
       setStep(2);
       startPolling(data.orderCode);

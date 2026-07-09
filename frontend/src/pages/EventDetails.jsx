@@ -192,6 +192,7 @@ const EventDetails = () => {
                   const items = tickets
                     .filter(t => (quantities[t._id] || 0) > 0)
                     .map(t => ({
+                      ticketId: t._id,
                       name: eventData.title,
                       type: t.ticketName,
                       quantity: quantities[t._id],
