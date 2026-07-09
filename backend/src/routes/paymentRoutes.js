@@ -3,7 +3,7 @@ const router = express.Router();
 const {
   createPayment,
   getPaymentStatus,
-  sePayWebhook
+  payOsWebhook
 } = require('../controllers/paymentController');
 
 // Create a new payment (returns QR URL + order code)
@@ -12,7 +12,7 @@ router.post('/create', createPayment);
 // Poll payment status
 router.get('/status/:orderCode', getPaymentStatus);
 
-// SePay webhook (called by SePay server)
-router.post('/webhook', sePayWebhook);
+// PayOS webhook (called by PayOS server)
+router.post('/webhook', payOsWebhook);
 
 module.exports = router;

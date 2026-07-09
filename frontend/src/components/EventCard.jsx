@@ -3,7 +3,8 @@ import { Calendar, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const EventCard = ({ id, title, description, date, location, image, status }) => {
-  const isCompleted = status === 'completed';
+  const isPast = new Date(date) < new Date();
+  const isCompleted = status === 'completed' || isPast;
 
   const API_URL = import.meta.env.VITE_API_URL || '/api';
   const BACKEND_URL = API_URL.replace('/api', '');
@@ -28,9 +29,13 @@ const EventCard = ({ id, title, description, date, location, image, status }) =>
         />
         {/* Status Badge */}
         <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-          isCompleted ? 'bg-white/20 text-white backdrop-blur-md' : 'bg-[#2dc275] text-black'
+          isPast 
+            ? 'bg-red-500/20 text-red-500 backdrop-blur-md' 
+            : isCompleted 
+              ? 'bg-white/20 text-white backdrop-blur-md' 
+              : 'bg-[#2dc275] text-black'
         }`}>
-          {isCompleted ? 'Hết vé' : 'Sắp diễn ra'}
+          {isPast ? 'Đã diễn ra' : isCompleted ? 'Hết vé' : 'Sắp diễn ra'}
         </div>
       </div>
 

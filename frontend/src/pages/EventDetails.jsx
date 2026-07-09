@@ -73,6 +73,7 @@ const EventDetails = () => {
   }
 
   const tickets = eventData.tickets || [];
+  const isPast = new Date(eventData.eventDate) < new Date();
   const totalPrice = tickets.reduce((sum, t) => sum + (t.price * (quantities[t._id] || 0)), 0);
   const totalQty = Object.values(quantities).reduce((sum, q) => sum + q, 0);
 
@@ -133,6 +134,12 @@ const EventDetails = () => {
               Chọn loại vé
             </h2>
 
+            {isPast && (
+              <div className="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium">
+                ⚠️ Sự kiện này đã diễn ra. Không thể đặt vé.
+              </div>
+            )}
+
             <div className="space-y-6">
               {tickets.length === 0 ? (
                 <p className="text-[#999999] text-center py-4 italic">Hiện chưa có loại vé nào cho sự kiện này.</p>
@@ -154,7 +161,7 @@ const EventDetails = () => {
                       <div className="flex items-center justify-end gap-4 pt-2">
                         <button 
                           onClick={() => updateQty(ticket._id, -1, available)}
-                          disabled={available === 0}
+                          disabled={available === 0 || isPast}
                           className="w-8 h-8 rounded-full bg-[#27272a] flex items-center justify-center hover:bg-[#2dc275] hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Minus className="w-4 h-4" />
@@ -162,7 +169,7 @@ const EventDetails = () => {
                         <span className="w-4 text-center font-bold">{quantities[ticket._id] || 0}</span>
                         <button 
                           onClick={() => updateQty(ticket._id, 1, available)}
-                          disabled={available === 0}
+                          disabled={available === 0 || isPast}
                           className="w-8 h-8 rounded-full bg-[#27272a] flex items-center justify-center hover:bg-[#2dc275] hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Plus className="w-4 h-4" />
@@ -180,7 +187,7 @@ const EventDetails = () => {
                 <span className="text-white font-bold text-xl">{totalPrice.toLocaleString()}đ</span>
               </div>
               <button 
-                disabled={totalQty === 0}
+                disabled={totalQty === 0 || isPast}
                 onClick={() => {
                   const items = tickets
                     .filter(t => (quantities[t._id] || 0) > 0)
@@ -193,12 +200,12 @@ const EventDetails = () => {
                   navigate('/checkout', { state: { items, totalAmount: totalPrice } });
                 }}
                 className={`w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
-                  totalQty > 0 
+                  totalQty > 0 && !isPast
                   ? 'bg-[#2dc275] text-black hover:scale-[1.02] shadow-[0_10px_30px_rgba(45,194,117,0.3)]' 
                   : 'bg-[#27272a] text-[#aaaaaa] cursor-not-allowed'
                 }`}
               >
-                Tiếp tục thanh toán
+                {isPast ? 'Sự kiện đã kết thúc' : 'Tiếp tục thanh toán'}
               </button>
             </div>
           </div>

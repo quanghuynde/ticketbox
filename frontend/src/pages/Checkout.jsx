@@ -50,7 +50,7 @@ const Checkout = () => {
 
   // ── state ───────────────────────────────────────────────────────────────────
   const [step,          setStep]          = useState(1); // 1=method, 2=qr, 3=result
-  const [paymentMethod, setPaymentMethod] = useState('sepay');
+  const [paymentMethod, setPaymentMethod] = useState('payos');
   const [loading,       setLoading]       = useState(false);
   const [error,         setError]         = useState('');
   const [payData,       setPayData]       = useState(null);
@@ -161,24 +161,24 @@ const Checkout = () => {
             </div>
 
             <div className="space-y-4">
-              {/* SePay option */}
+              {/* PayOS option */}
               <div
-                onClick={() => setPaymentMethod('sepay')}
+                onClick={() => setPaymentMethod('payos')}
                 className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 flex items-center justify-between
-                  ${paymentMethod === 'sepay' ? 'border-[#2dc275] bg-[#2dc275]/5' : 'border-[#27272a] hover:border-white/20'}`}
+                  ${paymentMethod === 'payos' ? 'border-[#2dc275] bg-[#2dc275]/5' : 'border-[#27272a] hover:border-white/20'}`}
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center overflow-hidden">
-                    <span className="text-black font-black italic text-sm">SePay</span>
+                    <span className="text-black font-black text-sm">PayOS</span>
                   </div>
                   <div>
-                    <h4 className="font-bold">Banking Scan (SePay)</h4>
-                    <p className="text-xs text-[#999999]">Quét QR xác nhận tức thì</p>
+                    <h4 className="font-bold">Banking Scan (PayOS)</h4>
+                    <p className="text-xs text-[#999999]">Thanh toán qua cổng hỗ trợ PayOS</p>
                   </div>
                 </div>
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center
-                  ${paymentMethod === 'sepay' ? 'border-[#2dc275]' : 'border-[#27272a]'}`}>
-                  {paymentMethod === 'sepay' && <div className="w-3 h-3 rounded-full bg-[#2dc275]" />}
+                  ${paymentMethod === 'payos' ? 'border-[#2dc275]' : 'border-[#27272a]'}`}>
+                  {paymentMethod === 'payos' && <div className="w-3 h-3 rounded-full bg-[#2dc275]" />}
                 </div>
               </div>
             </div>
@@ -256,13 +256,24 @@ const Checkout = () => {
             </div>
 
             {/* QR Image */}
-            <div className="p-4 bg-white rounded-3xl shadow-[0_0_60px_rgba(45,194,117,0.15)]">
+            <div className="p-4 bg-white rounded-3xl shadow-[0_0_60px_rgba(45,194,117,0.15)] flex flex-col items-center gap-2">
               <img
                 src={payData.qrUrl}
                 alt="VietQR Payment QR"
                 className="w-56 h-56 object-contain"
               />
             </div>
+
+            {payData.checkoutUrl && (
+              <a
+                href={payData.checkoutUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-[#2dc275] hover:underline flex items-center gap-1 mt-1 bg-[#2dc275]/10 px-3 py-1.5 rounded-lg border border-[#2dc275]/20 font-medium"
+              >
+                Mở link thanh toán PayOS trực tiếp
+              </a>
+            )}
 
             {/* Polling indicator */}
             <div className="flex items-center gap-2 text-[#aaaaaa] text-xs">
