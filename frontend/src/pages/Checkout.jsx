@@ -98,6 +98,34 @@ const Checkout = () => {
 
   useEffect(() => () => stopPolling(), [stopPolling]);
 
+  // Handle PayOS return URL redirect
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const statusParam = params.get('status');
+    const orderCodeParam = params.get('orderCode');
+    
+    if (statusParam && orderCodeParam) {
+      if (statusParam === 'PAID') {
+        const verifyPayment = async () => {
+          try {
+            const data = await getPaymentStatus(orderCodeParam);
+            if (data.status === 'paid' || data.paymentStatus === 'success') {
+              setPollStatus('paid');
+              setStep(3);
+              setPayData({ orderCode: orderCodeParam });
+            }
+          } catch (err) {
+            console.error('Error verifying payment after redirect:', err);
+          }
+        };
+        verifyPayment();
+      } else {
+        setPollStatus('failed');
+        setStep(3);
+      }
+    }
+  }, [location.search]);
+
   // ── pay now handler ──────────────────────────────────────────────────────────
   const handlePayNow = async () => {
     setLoading(true);
@@ -314,7 +342,6 @@ const Checkout = () => {
         </div>
       )}
 
-      {/* ── STEP 3: Result ──────────────────────────────────────────────────── */}
       {step === 3 && (
         <div className="flex flex-col items-center text-center gap-8 py-12">
           {pollStatus === 'paid' ? (
@@ -323,21 +350,30 @@ const Checkout = () => {
                 <CheckCircle2 className="w-12 h-12 text-[#2dc275]" />
               </div>
               <div className="space-y-3">
-                <h2 className="text-3xl font-bold text-[#2dc275]">Thanh toán thành công!</h2>
+                <h2 className="text-3xl font-bold text-[#2dc275]">Đăng ký vé thành công!</h2>
                 <p className="text-[#aaaaaa] max-w-sm">
-                  Vé của bạn đã được xác nhận. Kiểm tra email để nhận vé điện tử.
+                  Giao dịch thanh toán đã hoàn tất. Bạn có thể xem vé đã mua tại mục "Vé của tôi".
                 </p>
                 {payData && (
                   <p className="text-xs text-[#555] font-mono">Mã đơn: {payData.orderCode}</p>
                 )}
               </div>
-              <button
-                onClick={() => navigate('/')}
-                className="px-10 py-4 rounded-2xl bg-[#2dc275] text-black font-bold text-lg
-                  hover:scale-[1.02] transition-all shadow-[0_10px_30px_rgba(45,194,117,0.3)]"
-              >
-                Về trang chủ
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => navigate('/my-tickets')}
+                  className="px-8 py-4 rounded-2xl bg-[#2dc275] text-black font-bold text-lg
+                    hover:scale-[1.02] transition-all shadow-[0_10px_30px_rgba(45,194,117,0.3)]"
+                >
+                  Xem vé của tôi
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-8 py-4 rounded-2xl border border-[#27272a] text-[#aaaaaa] font-bold text-lg
+                    hover:border-white/20 hover:text-white transition-all"
+                >
+                  Về trang chủ
+                </button>
+              </div>
             </>
           ) : (
             <>

@@ -207,6 +207,25 @@ const getAll = async (req, res) => {
   }
 };
 
+const getUserOrders = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'User ID không hợp lệ' });
+    }
+
+    const orders = await Order.find({ userId })
+      .populate({
+        path: 'orderDetails'
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(orders.map(formatOrderResponse));
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi lấy danh sách vé của người dùng', error: err.message });
+  }
+};
+
 const getById = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.orderId)) {
@@ -406,4 +425,4 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+module.exports = { getAll, getUserOrders, getById, create, update, remove };

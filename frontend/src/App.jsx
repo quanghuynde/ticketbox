@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import AdminDashboard from './pages/AdminDashboard';
 import UserProfile from './pages/UserProfile';
+import MyTickets from './pages/MyTickets';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/profile" element={<UserProfile />} />
+            <Route path="/my-tickets" element={<MyTickets />} />
           </Routes>
         </main>
 
