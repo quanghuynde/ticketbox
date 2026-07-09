@@ -149,13 +149,6 @@ function toObject(value) {
   return value && typeof value.toObject === 'function' ? value.toObject() : value;
 }
 
-function getTicketIdValue(ticketId) {
-  if (!ticketId) return null;
-
-  const ticketObject = toObject(ticketId);
-  return ticketObject._id || ticketId;
-}
-
 function formatOrderResponse(order) {
   const orderObject = toObject(order);
   const orderDetails = Array.isArray(orderObject.orderDetails) ? orderObject.orderDetails : [];
@@ -179,6 +172,8 @@ function formatOrderResponse(order) {
         ticketId: ticket ? ticket._id : detailObject.ticketId,
         ticketName: ticket ? ticket.ticketName : 'Vé',
         eventName: event ? event.title : 'Sự kiện',
+        eventDate: event ? event.eventDate : null,
+        location: event ? event.location : null,
         quantity: detailObject.quantity,
         unitPrice: detailObject.unitPrice,
         lineTotal: detailObject.unitPrice * detailObject.quantity
@@ -187,17 +182,19 @@ function formatOrderResponse(order) {
   };
 }
 
+const ORDER_DETAIL_POPULATE = {
+  path: 'orderDetails',
+  populate: {
+    path: 'ticketId',
+    populate: {
+      path: 'eventId'
+    }
+  }
+};
+
 async function getPopulatedOrder(orderId) {
   const order = await Order.findById(orderId)
-    .populate({
-      path: 'orderDetails',
-      populate: {
-        path: 'ticketId',
-        populate: {
-          path: 'eventId'
-        }
-      }
-    })
+    .populate(ORDER_DETAIL_POPULATE)
     .populate('userId', 'fullName email');
 
   return order ? formatOrderResponse(order) : null;
@@ -206,15 +203,7 @@ async function getPopulatedOrder(orderId) {
 const getAll = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate({
-        path: 'orderDetails',
-        populate: {
-          path: 'ticketId',
-          populate: {
-            path: 'eventId'
-          }
-        }
-      })
+      .populate(ORDER_DETAIL_POPULATE)
       .populate('userId', 'fullName email')
       .sort({ createdAt: -1 });
 
@@ -232,15 +221,7 @@ const getUserOrders = async (req, res) => {
     }
 
     const orders = await Order.find({ userId })
-      .populate({
-        path: 'orderDetails',
-        populate: {
-          path: 'ticketId',
-          populate: {
-            path: 'eventId'
-          }
-        }
-      })
+      .populate(ORDER_DETAIL_POPULATE)
       .sort({ createdAt: -1 });
 
     res.status(200).json(orders.map(formatOrderResponse));
@@ -434,11 +415,9 @@ const remove = async (req, res) => {
       return res.status(400).json({ message: 'Không thể xóa đơn hàng đã thanh toán' });
     }
 
-    await Promise.all(order.orderDetails.map(detail => Ticket.updateOne(
-      { _id: detail.ticketId },
-      { $inc: { quantity: detail.quantity, soldQuantity: -detail.quantity } }
-    )));
-
+    // Pending/cancelled/refunded orders never hold reserved stock (stock is
+    // only deducted on payment success and already restored on cancel/refund),
+    // so there is nothing to give back here.
     await OrderDetail.deleteMany({ orderId: order._id });
     await Order.findByIdAndDelete(order._id);
 

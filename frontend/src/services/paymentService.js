@@ -2,8 +2,9 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:9999/api';
 
 /**
  * Create a new payment order and receive QR URL + bank details.
- * @param {Array}  items        - [{ name, quantity, unitPrice }]
+ * @param {Array}  items        - [{ ticketId, name, type, quantity, unitPrice }]
  * @param {number} totalAmount  - Total in VND
+ * @param {string} [userId]     - Logged-in user id (so the order belongs to them)
  */
 export async function createPayment(items, totalAmount, userId) {
   const res = await fetch(`${API_URL}/payment/create`, {
