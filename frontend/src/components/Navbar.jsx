@@ -70,6 +70,12 @@ const Navbar = () => {
                   Dashboard
                 </button>
               )}
+              <button
+                onClick={() => navigate('/my-tickets')}
+                className="hidden sm:flex text-white hover:text-[#2dc275] text-sm font-semibold transition-colors"
+              >
+                Vé của tôi
+              </button>
               <div 
                 onClick={() => navigate('/profile')}
                 className="flex items-center gap-2 text-white bg-[#27272a]/80 px-4 py-2 rounded-full text-sm font-medium border border-white/5 shadow-sm cursor-pointer hover:border-[#2dc275]/50 hover:bg-[#27272a] transition-all"
