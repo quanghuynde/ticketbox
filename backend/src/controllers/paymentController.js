@@ -1,31 +1,22 @@
 const Order = require('../models/Order');
 const Payment = require('../models/Payment');
+const PayOS = require('@payos/node');
+const Notification = require('../models/Notification');
+
+// Initialize PayOS instance
+const payos = new PayOS(
+  process.env.PAYOS_CLIENT_ID,
+  process.env.PAYOS_API_KEY,
+  process.env.PAYOS_CHECKSUM_KEY
+);
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Generate a unique order code:  TB + timestamp (base36) + 4 random chars
+ * Generate a unique numeric index order code for PayOS (integer format)
  */
 function generateOrderCode() {
-  const ts = Date.now().toString(36).toUpperCase();
-  const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `TB${ts}${rand}`;
-}
-
-/**
- * Build a VietQR image URL using the public vietqr.io API (no auth required).
- * Template: https://img.vietqr.io/image/{bankId}-{accountNo}-{template}.png?amount={amount}&addInfo={addInfo}&accountName={accountName}
- */
-function buildQrUrl(orderCode, amount) {
-  const bankId      = process.env.BANK_ID;
-  const accountNo   = process.env.BANK_ACCOUNT_NO;
-  const accountName = encodeURIComponent(process.env.BANK_ACCOUNT_NAME || '');
-  const addInfo     = encodeURIComponent(orderCode);
-
-  return (
-    `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png` +
-    `?amount=${amount}&addInfo=${addInfo}&accountName=${accountName}`
-  );
+  return parseInt(Date.now().toString().slice(-8) + Math.floor(10 + Math.random() * 90));
 }
 
 // ── controllers ───────────────────────────────────────────────────────────────
@@ -33,7 +24,7 @@ function buildQrUrl(orderCode, amount) {
 /**
  * POST /api/payment/create
  * Body: { items: [{ name, quantity, unitPrice }], totalAmount: Number }
- * Creates an Order + Payment and returns the VietQR URL.
+ * Creates an Order + Payment and returns the PayOS CheckLink details.
  */
 const createPayment = async (req, res) => {
   try {
@@ -45,9 +36,9 @@ const createPayment = async (req, res) => {
 
     const orderCode = generateOrderCode();
 
-    // Create order (userId left optional for now – will be set from auth middleware later)
+    // Create order
     const order = await Order.create({
-      orderCode,
+      orderCode: String(orderCode),
       userId: req.body.userId || '000000000000000000000000', // placeholder
       totalPrice: totalAmount,
       status: 'pending'
@@ -56,21 +47,38 @@ const createPayment = async (req, res) => {
     // Create payment record
     await Payment.create({
       orderId: order._id,
-      orderCode,
-      method: 'sepay',
+      orderCode: String(orderCode),
+      method: 'payos',
       amount: totalAmount,
       status: 'pending'
     });
 
-    const qrUrl = buildQrUrl(orderCode, totalAmount);
+    // Create payment link on PayOS
+    const paymentLinkData = {
+      orderCode: orderCode, // integer
+      amount: totalAmount,
+      description: `Thanh toan ve ${orderCode}`.slice(0, 25),
+      cancelUrl: process.env.PAYOS_CANCEL_URL || 'http://localhost:5173/checkout',
+      returnUrl: process.env.PAYOS_RETURN_URL || 'http://localhost:5173/checkout',
+      items: [
+        {
+          name: 'Ve xem ca nhac',
+          quantity: 1,
+          price: totalAmount
+        }
+      ]
+    };
+
+    const paymentLink = await payos.createPaymentLink(paymentLinkData);
 
     res.json({
-      orderCode,
-      qrUrl,
+      orderCode: String(orderCode),
+      checkoutUrl: paymentLink.checkoutUrl,
+      qrUrl: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(paymentLink.qrCode)}`,
       bankInfo: {
-        bankId:      process.env.BANK_ID,
-        accountNo:   process.env.BANK_ACCOUNT_NO,
-        accountName: process.env.BANK_ACCOUNT_NAME
+        bankId: paymentLink.bin || 'MB',
+        accountNo: paymentLink.accountNumber || '0365586658',
+        accountName: paymentLink.accountName || 'NGUYEN QUANG HUY'
       },
       amount: totalAmount
     });
@@ -109,61 +117,64 @@ const getPaymentStatus = async (req, res) => {
 
 /**
  * POST /api/payment/webhook
- * Called by SePay when a matching bank transfer is detected.
- * Header: Authorization: Apikey <SEPAY_SECRET_KEY>
- * Body (SePay format): { content, transferAmount, ... }
+ * Called by PayOS when payment is processed.
  */
-const sePayWebhook = async (req, res) => {
+const payOsWebhook = async (req, res) => {
   try {
-    // Validate secret key
-    const authHeader = req.headers['authorization'] || '';
-    const expectedKey = `Apikey ${process.env.SEPAY_SECRET_KEY}`;
-    if (authHeader !== expectedKey) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    const webhookData = req.body;
+
+    if (!webhookData || !webhookData.data) {
+      return res.status(400).json({ error: 'Invalid webhook payload' });
     }
 
-    const { content, transferAmount } = req.body;
-
-    if (!content) {
-      return res.status(400).json({ error: 'Missing content field' });
+    let verifiedData;
+    try {
+      verifiedData = payos.verifyPaymentWebhookData(webhookData);
+    } catch (verifyErr) {
+      console.error('[payOsWebhook] Signature verification failed:', verifyErr);
+      return res.status(400).json({ error: 'Invalid signature' });
     }
 
-    // SePay puts the bank transfer description in `content`.
-    // We search for any orderCode (TB…) embedded in the description.
-    const match = content.match(/TB[A-Z0-9]+/);
-    if (!match) {
-      // Transfer does not match any order code pattern – ignore
-      return res.json({ success: false, message: 'No order code found in content' });
-    }
+    const { orderCode, amount } = verifiedData;
 
-    const orderCode = match[0];
-
-    const order = await Order.findOne({ orderCode });
+    const order = await Order.findOne({ orderCode: String(orderCode) });
     if (!order) {
       return res.json({ success: false, message: 'Order not found' });
     }
 
     if (order.status === 'paid') {
-      // Already confirmed – idempotent response
       return res.json({ success: true, message: 'Already paid' });
     }
 
-    // Update order
+    // Update order status
     order.status = 'paid';
     await order.save();
 
-    // Update payment
+    // Update payment record
     await Payment.findOneAndUpdate(
-      { orderCode },
-      { status: 'success', transactionId: content, paidAt: new Date() }
+      { orderCode: String(orderCode) },
+      { status: 'success', transactionId: verifiedData.reference, paidAt: new Date() }
     );
 
-    console.log(`[sePayWebhook] Order ${orderCode} marked as PAID (amount: ${transferAmount})`);
+    // Create notification for user
+    try {
+      await Notification.create({
+        userId: order.userId,
+        type: 'payment',
+        title: 'Thanh toán thành công',
+        message: `Đơn hàng #${orderCode} của bạn đã được thanh toán thành công.`
+      });
+      console.log(`[payOsWebhook] Notification created for user ${order.userId}`);
+    } catch (notifErr) {
+      console.error('[payOsWebhook] Failed to create notification:', notifErr);
+    }
+
+    console.log(`[payOsWebhook] Order ${orderCode} marked as PAID (amount: ${amount})`);
     res.json({ success: true });
   } catch (err) {
-    console.error('[sePayWebhook]', err);
+    console.error('[payOsWebhook]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-module.exports = { createPayment, getPaymentStatus, sePayWebhook };
+module.exports = { createPayment, getPaymentStatus, payOsWebhook };
