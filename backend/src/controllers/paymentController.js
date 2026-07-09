@@ -2,6 +2,8 @@ const Order = require('../models/Order');
 const Payment = require('../models/Payment');
 const PayOS = require('@payos/node');
 const Notification = require('../models/Notification');
+const Ticket = require('../models/Ticket');
+const OrderDetail = require('../models/OrderDetail');
 
 // Initialize PayOS instance
 const payos = new PayOS(
@@ -23,12 +25,15 @@ function generateOrderCode() {
 
 /**
  * POST /api/payment/create
- * Body: { items: [{ name, quantity, unitPrice }], totalAmount: Number }
+ * Body: { items: [{ ticketId, name, quantity, unitPrice }], totalAmount: Number, userId: String }
  * Creates an Order + Payment and returns the PayOS CheckLink details.
  */
 const createPayment = async (req, res) => {
+  let createdOrder = null;
+  const reservedTickets = [];
+
   try {
-    const { totalAmount } = req.body;
+    const { totalAmount, userId, items } = req.body;
 
     if (!totalAmount || totalAmount <= 0) {
       return res.status(400).json({ error: 'totalAmount is required and must be > 0' });
@@ -37,16 +42,55 @@ const createPayment = async (req, res) => {
     const orderCode = generateOrderCode();
 
     // Create order
-    const order = await Order.create({
+    createdOrder = await Order.create({
       orderCode: String(orderCode),
-      userId: req.body.userId || '000000000000000000000000', // placeholder
+      userId: userId || '000000000000000000000000', // fallback to placeholder
       totalPrice: totalAmount,
       status: 'pending'
     });
 
+    // Process tickets and details if provided
+    if (Array.isArray(items) && items.length > 0) {
+      const ticketIds = items.map(item => item.ticketId).filter(Boolean);
+      const tickets = await Ticket.find({ _id: { $in: ticketIds } });
+      const ticketMap = new Map(tickets.map(t => [t._id.toString(), t]));
+
+      const details = items.map(item => {
+        const ticket = ticketMap.get(item.ticketId);
+        return {
+          orderId: createdOrder._id,
+          ticketId: item.ticketId,
+          quantity: item.quantity,
+          unitPrice: ticket ? ticket.price : item.unitPrice
+        };
+      });
+
+      if (details.length > 0) {
+        await OrderDetail.insertMany(details);
+      }
+
+      // Deduct stock and record reservation
+      for (const item of items) {
+        if (item.ticketId) {
+          const updated = await Ticket.findOneAndUpdate(
+            { _id: item.ticketId, quantity: { $gte: item.quantity } },
+            { $inc: { quantity: -item.quantity, soldQuantity: item.quantity } },
+            { new: true }
+          );
+
+          if (updated) {
+            reservedTickets.push({
+              ticketId: item.ticketId,
+              quantity: item.quantity
+            });
+          }
+        }
+      }
+    }
+
     // Create payment record
     await Payment.create({
-      orderId: order._id,
+      orderId: createdOrder._id,
       orderCode: String(orderCode),
       method: 'payos',
       amount: totalAmount,
@@ -83,6 +127,18 @@ const createPayment = async (req, res) => {
       amount: totalAmount
     });
   } catch (err) {
+    if (reservedTickets.length > 0) {
+      await Promise.all(reservedTickets.map(item => Ticket.updateOne(
+        { _id: item.ticketId },
+        { $inc: { quantity: item.quantity, soldQuantity: -item.quantity } }
+      )));
+    }
+
+    if (createdOrder) {
+      await OrderDetail.deleteMany({ orderId: createdOrder._id });
+      await Order.findByIdAndDelete(createdOrder._id);
+    }
+
     console.error('[createPayment]', err);
     res.status(500).json({ error: 'Internal server error' });
   }

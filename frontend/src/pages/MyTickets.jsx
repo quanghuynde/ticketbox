@@ -83,14 +83,13 @@ const MyTickets = () => {
               <div className="space-y-4 relative z-10">
                 <div className="text-[#999999] text-xs font-mono">Mã đơn: {order.orderCode}</div>
                 <h3 className="text-xl font-bold text-white line-clamp-2">
-                  {/* Since orders only have ticketId references, we just list the quantity and price */}
-                  Đơn hàng vé sự kiện ({order.orderDetails?.length || 0} vé)
+                  {order.orderDetails?.[0]?.eventName || 'Đơn hàng vé sự kiện'}
                 </h3>
                 
                 <div className="space-y-2 text-sm text-[#aaaaaa]">
                   {order.orderDetails?.map((detail, idx) => (
                     <div key={idx} className="flex justify-between items-center text-xs bg-[#2dc275]/5 -mx-2 px-2 py-1 rounded">
-                      <span>{detail.quantity}x Vé thường</span>
+                      <span>{detail.quantity}x {detail.ticketName || 'Vé'}</span>
                       <span className="font-medium">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(detail.unitPrice)}</span>
                     </div>
                   ))}

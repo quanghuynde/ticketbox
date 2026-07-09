@@ -5,11 +5,11 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:9999/api';
  * @param {Array}  items        - [{ name, quantity, unitPrice }]
  * @param {number} totalAmount  - Total in VND
  */
-export async function createPayment(items, totalAmount) {
+export async function createPayment(items, totalAmount, userId) {
   const res = await fetch(`${API_URL}/payment/create`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items, totalAmount })
+    body: JSON.stringify({ items, totalAmount, userId })
   });
   if (!res.ok) throw new Error('Failed to create payment');
   return res.json();

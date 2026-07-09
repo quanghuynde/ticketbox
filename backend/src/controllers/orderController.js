@@ -170,10 +170,15 @@ function formatOrderResponse(order) {
     id: orderObject._id,
     orderDetails: orderDetails.map(detail => {
       const detailObject = toObject(detail);
+      const ticket = detailObject.ticketId && typeof detailObject.ticketId === 'object' ? detailObject.ticketId : null;
+      const event = ticket && ticket.eventId && typeof ticket.eventId === 'object' ? ticket.eventId : null;
+
       return {
         _id: detailObject._id,
         orderId: detailObject.orderId,
-        ticketId: getTicketIdValue(detailObject.ticketId),
+        ticketId: ticket ? ticket._id : detailObject.ticketId,
+        ticketName: ticket ? ticket.ticketName : 'Vé',
+        eventName: event ? event.title : 'Sự kiện',
         quantity: detailObject.quantity,
         unitPrice: detailObject.unitPrice,
         lineTotal: detailObject.unitPrice * detailObject.quantity
@@ -185,7 +190,13 @@ function formatOrderResponse(order) {
 async function getPopulatedOrder(orderId) {
   const order = await Order.findById(orderId)
     .populate({
-      path: 'orderDetails'
+      path: 'orderDetails',
+      populate: {
+        path: 'ticketId',
+        populate: {
+          path: 'eventId'
+        }
+      }
     })
     .populate('userId', 'fullName email');
 
@@ -196,7 +207,13 @@ const getAll = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate({
-        path: 'orderDetails'
+        path: 'orderDetails',
+        populate: {
+          path: 'ticketId',
+          populate: {
+            path: 'eventId'
+          }
+        }
       })
       .populate('userId', 'fullName email')
       .sort({ createdAt: -1 });
@@ -216,7 +233,13 @@ const getUserOrders = async (req, res) => {
 
     const orders = await Order.find({ userId })
       .populate({
-        path: 'orderDetails'
+        path: 'orderDetails',
+        populate: {
+          path: 'ticketId',
+          populate: {
+            path: 'eventId'
+          }
+        }
       })
       .sort({ createdAt: -1 });
 
