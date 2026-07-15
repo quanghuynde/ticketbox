@@ -39,13 +39,6 @@ const register = async (req, res) => {
 
     await user.save();
 
-    // Generate token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
     // Exclude password from output
     const userResponse = {
       _id: user._id,
@@ -58,8 +51,7 @@ const register = async (req, res) => {
     };
 
     res.status(201).json({
-      message: 'Đăng ký người dùng thành công.',
-      token,
+      message: 'Đăng ký người dùng thành công. Vui lòng đăng nhập để tiếp tục.',
       user: userResponse,
     });
   } catch (error) {

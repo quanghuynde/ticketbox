@@ -95,10 +95,14 @@ const UserProfile = () => {
               {/* Header: Large Avatar & Name */}
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="relative">
-                  <div className="w-24 h-24 bg-gradient-to-tr from-[#2dc275] to-[#2dc275]/40 rounded-full p-[3px] shadow-[0_0_30px_rgba(45,194,117,0.2)]">
-                    <div className="w-full h-full bg-black rounded-full flex items-center justify-center font-bold text-4xl text-white">
-                      {profile?.fullName?.charAt(0).toUpperCase()}
-                    </div>
+                  <div className="w-24 h-24 bg-gradient-to-tr from-[#2dc275] to-[#2dc275]/40 rounded-full p-[3px] shadow-[0_0_30px_rgba(45,194,117,0.2)] overflow-hidden">
+                    {profile?.avatar ? (
+                      <img src={profile.avatar} alt={profile?.fullName || 'Avatar'} className="w-full h-full object-cover rounded-full" />
+                    ) : (
+                      <div className="w-full h-full bg-black rounded-full flex items-center justify-center font-bold text-4xl text-white">
+                        {profile?.fullName?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                   </div>
                   <div className="absolute bottom-0 right-0 bg-[#2dc275] p-1.5 rounded-full border-2 border-black" title="Tài khoản đang hoạt động">
                     <CheckCircle className="w-3.5 h-3.5 text-black" />
@@ -109,6 +113,27 @@ const UserProfile = () => {
                   <h2 className="text-2xl font-bold tracking-tight text-white">{profile?.fullName}</h2>
                   <p className="text-[#999999] text-sm mt-1">{profile?.email}</p>
                 </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+                <button
+                  onClick={() => navigate('/profile/edit')}
+                  className="w-full sm:w-auto bg-[#2dc275] text-black rounded-2xl px-5 py-3 font-semibold hover:bg-[#29b76b] transition-colors"
+                >
+                  Chỉnh sửa hồ sơ
+                </button>
+                <button
+                  onClick={() => navigate('/profile/change-password')}
+                  className="w-full sm:w-auto bg-[#27272a] border border-[#2dc275] rounded-2xl px-5 py-3 text-white font-semibold hover:bg-[#2dc275]/10 transition-colors"
+                >
+                  Đổi mật khẩu
+                </button>
+                <button
+                  onClick={() => navigate('/notifications')}
+                  className="w-full sm:w-auto bg-[#27272a] border border-[#aaaaaa] rounded-2xl px-5 py-3 text-white font-semibold hover:border-[#2dc275] hover:text-[#2dc275] transition-colors"
+                >
+                  Xem thông báo
+                </button>
               </div>
 
               {/* Profile Details List */}

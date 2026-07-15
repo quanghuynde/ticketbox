@@ -2,9 +2,9 @@ const Order = require('../models/Order');
 const OrderDetail = require('../models/OrderDetail');
 const Payment = require('../models/Payment');
 const PayOS = require('@payos/node');
-const Notification = require('../models/Notification');
 const Ticket = require('../models/Ticket');
 const { deductStockForOrder } = require('../services/stockService');
+const { createNotification } = require('../services/notificationService');
 
 // Initialize PayOS instance
 const payos = new PayOS(
@@ -66,12 +66,12 @@ async function markOrderAsPaid(order, reference) {
 
   // Create notification for user
   try {
-    await Notification.create({
-      userId: order.userId,
-      type: 'payment',
-      title: 'Thanh toán thành công',
-      message: `Đơn hàng #${orderCode} của bạn đã được thanh toán thành công.`
-    });
+    await createNotification(
+      order.userId,
+      'payment',
+      'Thanh toán thành công',
+      `Đơn hàng #${orderCode} của bạn đã được thanh toán thành công.`
+    );
   } catch (notifErr) {
     console.error('[markOrderAsPaid] Failed to create notification:', notifErr);
   }

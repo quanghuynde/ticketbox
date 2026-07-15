@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, User, Ticket, Menu } from 'lucide-react';
+import { Search, User, Ticket, Menu, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
@@ -71,6 +71,13 @@ const Navbar = () => {
                 </button>
               )}
               <button
+                onClick={() => navigate('/notifications')}
+                className="hidden sm:flex text-white hover:text-[#2dc275] text-sm font-semibold transition-colors"
+                title="Thông báo"
+              >
+                <Bell className="w-4 h-4" />
+              </button>
+              <button
                 onClick={() => navigate('/my-tickets')}
                 className="hidden sm:flex text-white hover:text-[#2dc275] text-sm font-semibold transition-colors"
               >
@@ -80,9 +87,13 @@ const Navbar = () => {
                 onClick={() => navigate('/profile')}
                 className="flex items-center gap-2 text-white bg-[#27272a]/80 px-4 py-2 rounded-full text-sm font-medium border border-white/5 shadow-sm cursor-pointer hover:border-[#2dc275]/50 hover:bg-[#27272a] transition-all"
               >
-                <div className="w-5 h-5 bg-[#2dc275] rounded-full flex items-center justify-center text-black font-bold text-[10px]">
-                  {user?.fullName?.charAt(0).toUpperCase() || '?'}
-                </div>
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="avatar" className="w-6 h-6 rounded-full object-cover border border-white/10" />
+                ) : (
+                  <div className="w-6 h-6 bg-[#2dc275] rounded-full flex items-center justify-center text-black font-bold text-[10px]">
+                    {user?.fullName?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                )}
                 <span>{user?.fullName || 'User'}</span>
               </div>
               <button

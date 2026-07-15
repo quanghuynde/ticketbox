@@ -42,12 +42,8 @@ const Register = () => {
     try {
       setError('');
       setLoading(true);
-      const registeredUser = await register(fullName, email, password, otp);
-      if (registeredUser && registeredUser.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/');
-      }
+      await register(fullName, email, password, otp);
+      navigate('/login');
     } catch (err) {
       setError(err.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
     } finally {
