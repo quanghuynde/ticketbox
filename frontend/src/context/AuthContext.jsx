@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Đăng ký thất bại. Vui lòng thử lại.');
       }
 
-      return data.user;
+      return data;
     } catch (error) {
       console.error('Registration error:', error);
       throw error;

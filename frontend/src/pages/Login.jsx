@@ -72,10 +72,7 @@ const Login = () => {
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1">
-                <label className="text-sm font-medium text-[#aaaaaa]">Password</label>
-                <Link to="/forgot-password" id="forgot-password" className="text-xs text-[#2dc275] hover:underline">Forgot password?</Link>
-              </div>
+              <label className="text-sm font-medium text-[#aaaaaa] ml-1">Password</label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#aaaaaa] group-focus-within:text-[#2dc275] transition-colors" />
                 <input 
@@ -86,6 +83,9 @@ const Login = () => {
                   required
                   className="w-full bg-black/40 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder:text-[#555555] focus:outline-none focus:border-[#2dc275] focus:ring-1 focus:ring-[#2dc275] transition-all"
                 />
+              </div>
+              <div className="flex justify-end">
+                <Link to="/forgot-password" id="forgot-password" className="text-xs text-[#2dc275] hover:underline">Forgot password?</Link>
               </div>
             </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, User, ArrowRight, Ticket, Key } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,38 @@ const Register = () => {
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setTimeout(() => setCountdown((v) => v - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  const handleSendOtp = async () => {
+    if (!fullName || !email || !password) {
+      setError('Vui lòng điền đầy đủ các thông tin bắt buộc.');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Mật khẩu phải chứa ít nhất 8 ký tự.');
+      return;
+    }
+
+    setError('');
+    setLoading(true);
+    try {
+      await register(fullName, email, password);
+      setOtpSent(true);
+      setShowOtpStep(true);
+      setCountdown(300);
+    } catch (err) {
+      setError(err.message || 'Không thể gửi mã OTP. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,8 +60,7 @@ const Register = () => {
         setError('Mật khẩu phải chứa ít nhất 8 ký tự.');
         return;
       }
-      setError('');
-      setShowOtpStep(true);
+      await handleSendOtp();
       return;
     }
 
@@ -121,9 +152,10 @@ const Register = () => {
 
                 <button 
                   type="submit"
-                  className="w-full bg-[#2dc275] text-black font-bold py-4 rounded-2xl mt-4 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-[0_10px_30px_rgba(45,194,117,0.3)] flex items-center justify-center gap-2"
+                  disabled={loading}
+                  className="w-full bg-[#2dc275] text-black font-bold py-4 rounded-2xl mt-4 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-[0_10px_30px_rgba(45,194,117,0.3)] flex items-center justify-center gap-2 disabled:opacity-60"
                 >
-                  Get Started
+                  {loading ? 'Đang gửi OTP...' : 'Gửi mã OTP'}
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </>
@@ -131,7 +163,9 @@ const Register = () => {
               <>
                 <div className="text-center py-2">
                   <p className="text-xs text-[#999999] mb-4">
-                    Vui lòng nhập mã xác thực OTP gửi tới email <b className="text-white">{email}</b> để hoàn tất đăng ký.
+                    {otpSent
+                      ? <>Mã OTP đã được gửi tới email <b className="text-white">{email}</b>. Vui lòng nhập mã để hoàn tất đăng ký.</>
+                      : 'Vui lòng nhập mã xác thực OTP gửi tới email của bạn.'}
                   </p>
                 </div>
 
@@ -143,7 +177,7 @@ const Register = () => {
                       type="text" 
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
-                      placeholder="Mã OTP mặc định: 123456"
+                      placeholder="Nhập 6 chữ số"
                       maxLength={6}
                       required
                       autoFocus
@@ -155,7 +189,7 @@ const Register = () => {
                 <div className="flex gap-4 pt-2">
                   <button 
                     type="button"
-                    onClick={() => { setShowOtpStep(false); setError(''); }}
+                    onClick={() => { setShowOtpStep(false); setOtpSent(false); setError(''); setCountdown(0); }}
                     className="flex-1 bg-[#27272a]/50 hover:bg-[#27272a] text-white border border-white/10 font-bold py-4 rounded-2xl transition-all"
                   >
                     Quay lại
@@ -166,6 +200,17 @@ const Register = () => {
                     className="flex-[2] bg-[#2dc275] text-black font-bold py-4 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-[0_10px_30px_rgba(45,194,117,0.3)] disabled:opacity-50 disabled:hover:scale-100"
                   >
                     {loading ? 'Đang xác thực...' : 'Xác thực & Đăng ký'}
+                  </button>
+                </div>
+
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={loading || countdown > 0}
+                    className="text-sm text-[#2dc275] hover:underline disabled:text-[#666666] disabled:no-underline"
+                  >
+                    {countdown > 0 ? `Gửi lại OTP sau ${countdown}s` : 'Gửi lại OTP'}
                   </button>
                 </div>
               </>
