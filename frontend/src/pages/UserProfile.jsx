@@ -96,13 +96,9 @@ const UserProfile = () => {
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="relative">
                   <div className="w-24 h-24 bg-gradient-to-tr from-[#2dc275] to-[#2dc275]/40 rounded-full p-[3px] shadow-[0_0_30px_rgba(45,194,117,0.2)] overflow-hidden">
-                    {profile?.avatar ? (
-                      <img src={profile.avatar} alt={profile?.fullName || 'Avatar'} className="w-full h-full object-cover rounded-full" />
-                    ) : (
-                      <div className="w-full h-full bg-black rounded-full flex items-center justify-center font-bold text-4xl text-white">
-                        {profile?.fullName?.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    <div className="w-full h-full bg-black rounded-full flex items-center justify-center font-bold text-4xl text-white">
+                      {profile?.fullName?.charAt(0).toUpperCase() || '?'}
+                    </div>
                   </div>
                   <div className="absolute bottom-0 right-0 bg-[#2dc275] p-1.5 rounded-full border-2 border-black" title="Tài khoản đang hoạt động">
                     <CheckCircle className="w-3.5 h-3.5 text-black" />
