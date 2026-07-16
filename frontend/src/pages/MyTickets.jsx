@@ -36,7 +36,7 @@ const FILTERS = [
 ];
 
 const MyTickets = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +44,7 @@ const MyTickets = () => {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       navigate('/login');
       return;
     }
@@ -66,7 +66,7 @@ const MyTickets = () => {
     };
 
     fetchOrders();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const filteredOrders = orders.filter(
     (order) => filter === 'all' || order.status === filter
