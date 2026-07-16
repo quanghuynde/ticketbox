@@ -7,7 +7,7 @@ TicketBox là một ứng dụng nền tảng cho phép người dùng tìm ki�
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB, Mongoose
 - **Authentication:** JSON Web Token (JWT), BcryptJS
-- **Payment:** Tích hợp SePay (VietQR)
+- **Payment:** Tích hợp PayOS (VietQR)
 - **Frontend:** React (Vite)
 
 ## ✨ Tính năng chính
@@ -60,6 +60,17 @@ backend/
    SEPAY_SECRET_KEY=your_sepay_key
    BANK_ID=your_bank_id
    BANK_ACCOUNT_NO=your_account_no
+
+   CLOUDINARY_CLOUD_NAME=....
+   CLOUDINARY_API_KEY=....
+   CLOUDINARY_API_SECRET=....
+   APP_NAME=My Ticket App
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=....
+   SMTP_SECURE=false
+   SMTP_USER=....
+   SMTP_PASS=....
+   MAIL_FROM=....
    ```
 4. Chạy server ở chế độ phát triển:
    ```bash
