@@ -1,15 +1,19 @@
-const dotenv = require('dotenv');
-const nodemailer = require('nodemailer');
+const dotenv = require("dotenv");
+const nodemailer = require("nodemailer");
 
 dotenv.config();
 
 const createTransporter = () => {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  if (
+    !process.env.SMTP_HOST ||
+    !process.env.SMTP_USER ||
+    !process.env.SMTP_PASS
+  ) {
     return null;
   }
 
   const port = Number(process.env.SMTP_PORT || 587);
-  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+  const secure = process.env.SMTP_SECURE === "true" || port === 465;
 
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -30,11 +34,13 @@ const generateOtpCode = () => {
 
 const sendOtpEmail = async ({ to, fullName, otp }) => {
   if (!transporter) {
-    throw new Error('SMTP mail service is not configured. Please set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM in your environment.');
+    throw new Error(
+      "SMTP mail service is not configured. Please set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and MAIL_FROM in your environment.",
+    );
   }
 
   const fromEmail = process.env.MAIL_FROM || process.env.SMTP_USER;
-  const appName = process.env.APP_NAME || 'TicketBox';
+  const appName = process.env.APP_NAME || "TicketBox";
 
   const info = await transporter.sendMail({
     from: `${appName} <${fromEmail}>`,
@@ -42,7 +48,7 @@ const sendOtpEmail = async ({ to, fullName, otp }) => {
     subject: `${appName} - Mã OTP xác thực đăng ký`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
-        <h2>Xin chào ${fullName || 'bạn'},</h2>
+        <h2>Xin chào ${fullName || "bạn"},</h2>
         <p>Mã OTP để hoàn tất đăng ký tài khoản trên <strong>${appName}</strong> là:</p>
         <div style="font-size: 28px; font-weight: 700; letter-spacing: 4px; margin: 20px 0; padding: 12px 20px; background: #f3f4f6; display: inline-block; border-radius: 8px;">${otp}</div>
         <p>Mã này sẽ hết hạn sau 5 phút.</p>
