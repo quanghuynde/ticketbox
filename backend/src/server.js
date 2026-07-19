@@ -23,7 +23,12 @@ const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://quanghuynde.github.io"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Serve static files
