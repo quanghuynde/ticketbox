@@ -25,10 +25,34 @@ const getAll = async (req, res) => {
     // Query database and populate category details
     const events = await Event.find(query)
       .populate('categoryId', 'name')
-      .sort({ eventDate: 1 });
+      .sort({ eventDate: 1 })
+      .lean();
     
+    // Attach tickets and minPrice for each event
+    const eventIds = events.map(e => e._id);
+    const tickets = await Ticket.find({ eventId: { $in: eventIds } }).lean();
+    const ticketMap = {};
+    tickets.forEach(t => {
+      const eId = t.eventId.toString();
+      if (!ticketMap[eId]) ticketMap[eId] = [];
+      ticketMap[eId].push(t);
+    });
+
+    const enrichedEvents = events.map(e => {
+      const eTickets = ticketMap[e._id.toString()] || [];
+      const validPrices = eTickets.map(t => t.price).filter(p => typeof p === 'number');
+      const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
+      const totalRemaining = eTickets.reduce((sum, t) => sum + Math.max(0, (t.quantity || 0) - (t.soldQuantity || 0)), 0);
+      return {
+        ...e,
+        tickets: eTickets,
+        minPrice,
+        totalRemaining
+      };
+    });
+
     console.log(`Found ${events.length} events matching criteria`);
-    res.status(200).json(events);
+    res.status(200).json(enrichedEvents);
   } catch (err) {
     console.error('Error fetching events:', err.message);
     res.status(500).json({ message: 'Lỗi lấy danh sách sự kiện', error: err.message });

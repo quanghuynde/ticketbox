@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Github, Chrome, Ticket } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff, Ticket, Shield, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
@@ -9,6 +9,7 @@ const Login = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,97 +30,100 @@ const Login = () => {
         navigate('/');
       }
     } catch (err) {
-      setError(err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      setError(err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại email hoặc mật khẩu.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-20">
-      <div className="w-full max-w-md">
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md space-y-8">
+        
         {/* Logo & Header */}
-        <div className="text-center mb-10 space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#2dc275] rounded-2xl rotate-3 mb-2 shadow-[0_0_30px_rgba(45,194,117,0.3)]">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-[#2dc275] to-[#40e08f] rounded-2xl rotate-3 shadow-[0_0_35px_rgba(45,194,117,0.35)] mb-1">
             <Ticket className="text-black w-8 h-8 -rotate-3" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
-          <p className="text-[#999999]">Please enter your details to sign in</p>
+          <h1 className="text-3xl font-black tracking-tight text-white">Đăng nhập tài khoản</h1>
+          <p className="text-zinc-400 text-sm">Chào mừng bạn trở lại với nền tảng sự kiện TicketBox</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-[#27272a]/30 backdrop-blur-xl rounded-3xl p-8 border border-white/5 shadow-2xl space-y-6">
+        <div className="bg-zinc-900/80 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl space-y-6">
+          
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm px-4 py-3 rounded-2xl">
-              {error}
+            <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs px-4 py-3 rounded-2xl flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0" />
+              <span>{error}</span>
             </div>
           )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#aaaaaa] ml-1">Email Address</label>
+            
+            {/* Email Field */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-zinc-300 ml-1">Địa chỉ Email</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#aaaaaa] group-focus-within:text-[#2dc275] transition-colors" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-[#2dc275] transition-colors pointer-events-none" />
                 <input 
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
                   required
-                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder:text-[#555555] focus:outline-none focus:border-[#2dc275] focus:ring-1 focus:ring-[#2dc275] transition-all"
+                  className="w-full bg-black/50 border border-white/10 rounded-2xl py-3 pl-11 pr-4 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-[#2dc275] focus:ring-2 focus:ring-[#2dc275]/20 transition-all"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#aaaaaa] ml-1">Password</label>
+            {/* Password Field */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center ml-1">
+                <label className="text-xs font-semibold text-zinc-300">Mật khẩu</label>
+                <Link to="/forgot-password" id="forgot-password" className="text-xs text-[#2dc275] hover:underline font-medium">
+                  Quên mật khẩu?
+                </Link>
+              </div>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#aaaaaa] group-focus-within:text-[#2dc275] transition-colors" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-[#2dc275] transition-colors pointer-events-none" />
                 <input 
-                  type="password" 
+                  type={showPassword ? 'text' : 'password'} 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-black/40 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder:text-[#555555] focus:outline-none focus:border-[#2dc275] focus:ring-1 focus:ring-[#2dc275] transition-all"
+                  className="w-full bg-black/50 border border-white/10 rounded-2xl py-3 pl-11 pr-11 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-[#2dc275] focus:ring-2 focus:ring-[#2dc275]/20 transition-all"
                 />
-              </div>
-              <div className="flex justify-end">
-                <Link to="/forgot-password" id="forgot-password" className="text-xs text-[#2dc275] hover:underline">Forgot password?</Link>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-1 rounded-lg"
+                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
+            {/* Submit Button */}
             <button 
               type="submit"
               disabled={loading}
-              className="w-full bg-[#2dc275] text-black font-bold py-4 rounded-2xl mt-4 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-[0_10px_30px_rgba(45,194,117,0.3)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
+              className="w-full bg-[#2dc275] text-black font-extrabold py-3.5 rounded-2xl mt-4 hover:bg-[#35d883] hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 shadow-[0_0_25px_rgba(45,194,117,0.35)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
             >
-              {loading ? 'Signing In...' : 'Sign In'}
-              <ArrowRight className="w-5 h-5" />
+              <span>{loading ? 'Đang đăng nhập...' : 'Đăng nhập'}</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          <div className="relative py-2">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/5"></div>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#27272a]/0 px-2 text-[#555555] backdrop-blur-md">Or continue with</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            <button className="flex items-center justify-center gap-2 bg-[#27272a]/50 hover:bg-[#27272a] border border-white/10 py-3 rounded-2xl transition-all">
-              <Chrome className="w-5 h-5" />
-              <span className="text-sm font-medium">Google</span>
-            </button>
-          </div>
         </div>
 
         {/* Footer Link */}
-        <p className="text-center mt-8 text-[#aaaaaa] text-sm">
-          Don't have an account? {' '}
-          <Link to="/register" id="to-register" className="text-[#2dc275] font-bold hover:underline">Sign up now</Link>
+        <p className="text-center text-zinc-400 text-xs">
+          Chưa có tài khoản TicketBox? {' '}
+          <Link to="/register" id="to-register" className="text-[#2dc275] font-bold hover:underline">
+            Đăng ký ngay
+          </Link>
         </p>
       </div>
     </div>
