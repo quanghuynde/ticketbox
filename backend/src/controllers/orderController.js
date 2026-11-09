@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const OrderDetail = require('../models/OrderDetail');
 const Ticket = require('../models/Ticket');
+const Payment = require('../models/Payment');
+const { restoreStockForOrder } = require('../services/stockService');
+const { createNotification } = require('../services/notificationService');
 
 function generateOrderCode() {
   const ts = Date.now().toString(36).toUpperCase();
@@ -427,4 +430,79 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getUserOrders, getById, create, update, remove };
+/**
+ * POST /api/orders/:orderId/cancel
+ * Body: { reason: String }
+ * Cancels an order. If the order was 'paid', restores stock for each ticket in the order,
+ * updates payment record, and sends a notification.
+ */
+const cancelOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { reason } = req.body || {};
+
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ message: 'Mã đơn hàng không hợp lệ' });
+    }
+
+    const order = await Order.findById(orderId).populate('orderDetails');
+    if (!order) {
+      return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+    }
+
+    if (order.status === 'cancelled') {
+      return res.status(400).json({ message: 'Đơn hàng này đã được hủy trước đó.' });
+    }
+
+    if (order.status === 'refunded') {
+      return res.status(400).json({ message: 'Đơn hàng này đã được hoàn tiền.' });
+    }
+
+    const wasPaid = order.status === 'paid';
+
+    // If order was paid, atomically restore tickets back to inventory
+    if (wasPaid) {
+      try {
+        await restoreStockForOrder(order._id);
+      } catch (stockErr) {
+        console.error(`[cancelOrder] Lỗi hoàn trả kho vé cho đơn ${order.orderCode}:`, stockErr.message);
+      }
+    }
+
+    // Update order status
+    order.status = 'cancelled';
+    await order.save();
+
+    // Sync Payment record if exists
+    try {
+      await Payment.findOneAndUpdate(
+        { orderCode: String(order.orderCode) },
+        { status: 'failed' }
+      );
+    } catch (payErr) {
+      console.error('[cancelOrder] Lỗi cập nhật Payment record:', payErr.message);
+    }
+
+    // Create in-app notification for the user
+    try {
+      await createNotification(
+        order.userId,
+        'order',
+        'Hủy vé thành công',
+        `Đơn hàng #${order.orderCode} đã được hủy.${reason ? ` Lý do: ${reason}.` : ''}${wasPaid ? ' Số lượng vé đã được hoàn trả lại hệ thống.' : ''}`
+      );
+    } catch (notifErr) {
+      console.error('[cancelOrder] Lỗi tạo thông báo:', notifErr.message);
+    }
+
+    res.status(200).json({
+      message: 'Hủy đơn hàng thành công',
+      order
+    });
+  } catch (err) {
+    console.error('[cancelOrder]', err);
+    res.status(500).json({ message: 'Lỗi máy chủ khi hủy đơn hàng', error: err.message });
+  }
+};
+
+module.exports = { getAll, getUserOrders, getById, create, update, remove, cancelOrder };
