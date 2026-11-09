@@ -1,6 +1,10 @@
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const getNotifications = async (token) => {
+  if (!token) {
+    return [];
+  }
+
   const response = await fetch(`${API_URL}/notifications`, {
     headers: {
       'Content-Type': 'application/json',
@@ -8,14 +12,22 @@ const getNotifications = async (token) => {
     },
   });
 
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+  }
+
   const data = await response.json();
   if (!response.ok) {
     throw new Error(data.message || 'Không thể tải thông báo.');
   }
-  return data;
+  return Array.isArray(data) ? data : [];
 };
 
 const markAsRead = async (token, id) => {
+  if (!token) return null;
+
   const response = await fetch(`${API_URL}/notifications/${id}/read`, {
     method: 'PATCH',
     headers: {
@@ -23,6 +35,12 @@ const markAsRead = async (token, id) => {
       Authorization: `Bearer ${token}`,
     },
   });
+
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+  }
 
   const data = await response.json();
   if (!response.ok) {
@@ -32,6 +50,8 @@ const markAsRead = async (token, id) => {
 };
 
 const deleteNotification = async (token, id) => {
+  if (!token) return null;
+
   const response = await fetch(`${API_URL}/notifications/${id}`, {
     method: 'DELETE',
     headers: {
@@ -39,6 +59,12 @@ const deleteNotification = async (token, id) => {
       Authorization: `Bearer ${token}`,
     },
   });
+
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+  }
 
   const data = await response.json();
   if (!response.ok) {

@@ -6,8 +6,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Get API URL from env, default to relative '/api'
-  const API_URL = import.meta.env.VITE_API_URL || '/api';
+  // Get API URL from env, default to localhost backend
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:9999/api';
 
   useEffect(() => {
     // Check if user is logged in from localStorage on mount
